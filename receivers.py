@@ -1,5 +1,5 @@
 import socket
-from .packets import Packet
+from jenga.packets import Packet
 
 
 class Receiver(object):
@@ -16,22 +16,7 @@ class Receiver(object):
     def __next__(self):
         try:
             data = self.socket.recv(8 * 12)
-        except socket.error:
+        except Exception:
             self.socket.close()
         else:
             return Packet.unpack(data)
-
-
-
-
-def camera(controller):
-    camera_receiver = Receiver(9000)
-    print(dir(controller))
-    for vector in iter(camera_receiver):
-        print(vector)
-
-
-def hand(controller):
-    hand_receiver = Receiver(9001)
-    for vector in iter(hand_receiver):
-        print(vector)

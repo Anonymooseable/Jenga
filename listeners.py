@@ -26,11 +26,25 @@ class Listener(Leap.Listener):
     GRABBED = 20
 
     def __init__(self, port):
+        self.port = port
+        self._connection = None
         super(Listener, self).__init__()
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(('', port))
-        s.listen(1)
-        self.connection, address = s.accept()
+
+    @property
+    def connection(self):
+        if self._connection is None:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(('', self.port))
+            s.listen(1)
+            self._connection, address = s.accept()
+        return self._connection
+
+    def send(self, data):
+        try:
+            self.connection.sendall(data)
+        except socket.error:
+            self._connection = None
+            self.connection.sendall(data)
 
     def on_init(self, controller):
         logger.info('Initialized')
@@ -47,7 +61,7 @@ class Listener(Leap.Listener):
     def on_frame(self, controller):
         packet = self.get_response(controller)
         print packet
-        self.connection.sendall(packet.pack())
+        self.send(packet.pack())
 
     @classmethod
     def listen(cls, port):

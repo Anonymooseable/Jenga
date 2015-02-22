@@ -19,5 +19,5 @@ class Packet(BasePacket):
     @classmethod
     def unpack(cls, packet):
         fields = struct.unpack(cls.structure, packet)
-        fields = [fields[i:i+3] for i in xrange(0, len(fields), 3)]
+        fields = [fields[i:i+3] for i in range(0, len(fields), 3)]
         return cls._make(fields)
