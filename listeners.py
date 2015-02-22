@@ -84,4 +84,5 @@ class Listener(Leap.Listener):
 
 
 if __name__ == '__main__':
-    Listener.listen(9050)
+    port = int(sys.argv[1])
+    Listener.listen(port)

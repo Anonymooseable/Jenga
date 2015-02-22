@@ -1,5 +1,5 @@
 import socket
-from packets import Packet
+from .packets import Packet
 
 
 class Receiver(object):
@@ -22,13 +22,16 @@ class Receiver(object):
             return Packet.unpack(data)
 
 
-receiver = Receiver(9050)
 
 
-def camera_controller(controller):
-    for vector in iter(receiver):
+def camera(controller):
+    camera_receiver = Receiver(9000)
+    print(dir(controller))
+    for vector in iter(camera_receiver):
         print(vector)
 
 
-if __name__ == '__main__':
-    camera_controller(1)
+def hand(controller):
+    hand_receiver = Receiver(9001)
+    for vector in iter(hand_receiver):
+        print(vector)
