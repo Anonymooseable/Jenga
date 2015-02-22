@@ -1,22 +1,38 @@
 import bge
 
-from jenga.receivers import Receiver
+from receivers import Receiver
 
 
 receiver = Receiver(9002)
-previous = (0, 0, 0)
+previousX = previousZ = 0
 
 
 def camera(controller):
-    try:
-        scene = bge.logic.getCurrentScene()
-        camera = scene.active_camera
-        vector = next(receiver)[0]
-        if previous is (0, 0, 0):
-            return
-        change = [v_a + p_a for v_a, p_a in zip(vector, previous)]
-        change = [a*0.001 for a in change]
-        position = [pos + axis for pos, axis in zip(camera.position, change)]
-        camera.position = position
-    except:
-        receiver.socket.close()
+    global previousX, previousZ
+    packet = 1
+    while packet is not None:
+        try:
+            packet = next(receiver)
+        except BlockingIOError:
+            packet = None
+        except:
+            print("CLOSING")
+            close()
+            raise
+        if not packet:
+            previousX = 0
+            previousZ = 0
+            continue
+        currX = packet.lhpp[0]
+        changeX = (currX - previousX)
+        changeX = change if abs(change) > 0.2 and 0 not in (currX, previousX) else 0
+        previousX = currX
+        controller.actuators["Motion"].torque = [0, 0, changeX]
+        controller.activate(controller.actuators["Motion"])
+        
+
+def close(controller):
+    print("QUITTING CLOSING")
+    receiver.socket.close()
+    import bge
+    bge.logic.getCurrentScene().end()

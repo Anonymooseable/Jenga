@@ -1,11 +1,13 @@
 import socket
-from jenga.packets import Packet
+from packets import Packet
 
 
 class Receiver(object):
     def __init__(self, port):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect(('', port))
+        self.socket.setblocking(False)
+        self.buffer = b""
 
     def __iter__(self):
         return self
@@ -14,9 +16,12 @@ class Receiver(object):
         return self.__next__()
 
     def __next__(self):
-        try:
-            data = self.socket.recv(8 * 12)
-        except Exception:
-            self.socket.close()
-        else:
-            return Packet.unpack(data)
+        if len(self.buffer) < 8*12:
+            self.buffer += self.socket.recv(1024)
+        if len(self.buffer) >= 8*12:
+            packetdata = self.buffer[:8*12]
+            self.buffer = self.buffer[8*12:]
+            return Packet.unpack(packetdata)
+
+    def __del__(self):
+        self.socket.close()

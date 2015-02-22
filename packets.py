@@ -16,6 +16,9 @@ class Packet(BasePacket):
         fields = (axis for vector in self for axis in vector)
         return struct.pack(self.structure, *fields)
 
+    def __bool__(self):
+        return any(self)
+
     @classmethod
     def unpack(cls, packet):
         fields = struct.unpack(cls.structure, packet)
